@@ -1,0 +1,99 @@
+
+on join:
+	set {duty::%player's uuid%} to false
+on load:
+	send "Duty System 1.0 -> Succesfully Loaded!" to console
+
+command /duty [<text>]:
+	permission: admin.use
+	trigger:
+		if arg-1 is not set:
+			send "&c------------" to player
+			send "&3Duty&cSystem" to player
+			send "&c------------" to player
+			send "&8/duty <&con / off&8>" to player
+		Else:
+			if arg-1 is "on":
+				if {duty::%player's uuid%} is false:
+					set {p} to player
+					delete {inventories.%{p}%.items::*}
+					delete {inventories.%{p}%.armor::*}
+					set {inventories.%player's uuid%.items::*} to items in player's inventory
+					set {inventories.%player's uuid%.helmet} to player's helmet
+					set {inventories.%player's uuid%.chest} to player's chestplate
+					set {inventories.%player's uuid%.legs} to player's leggings
+					set {inventories.%player's uuid%.boots} to player's boots
+					wait a tick
+					clear player's inventory
+					set {duty::%player's uuid%} to true
+					set player's gamemode to creative
+					send "&c------------" to player
+					send "&3Duty&cSystem" to player
+					send "&c------------" to player
+					send "&8Now you are in Staff duty!" to player
+					set player's helmet to diamond
+					set {_p} to "%player%" parsed as player
+					set slot 8 of player's inventory to barrier named "&cExit Duty"
+					set slot 6 of player's inventory to skull of player named "&b%player%"
+					if {vanish.%player%} is false:
+						set slot 7 of player's inventory to gray dye named "&8Vanish: &7Off"
+					loop all players:
+						send "&3Duty&cSystem &8%player% is now in duty! (&cAdminDuty&8)" to loop-player
+						send "&3Duty&cSystem If you have any problems: /m %player% <problem>!" to loop-player
+				else if {duty::%player's uuid%} is true:
+					send "&c------------" to player
+					send "&3Agent&cCraft" to player
+					send "&c------------" to player
+					send "&8You are already in duty! /duty off" to player
+			if arg-1 is "off":
+				if {duty::%player's uuid%} is true:
+					set {p} to player
+					clear the player's inventory
+					give player {inventories.%player's uuid%.items::*}
+					equip player with {inventories.%player's uuid%.helmet}
+					equip player with {inventories.%player's uuid%.chestplate}
+					equip player with {inventories.%player's uuid%.legs}
+					equip player with {inventories.%player's uuid%.boots}
+					set {duty::%player's uuid%} to false
+					set player's gamemode to survival
+					reveal the player from all players
+					set {vanish.%player%} to false
+					send "&c------------" to player
+					send "&3Agent&cCraft" to player
+					send "&c------------" to player
+					send "&8You have left duty!" to player
+					loop all players:
+						send "&3Duty&cSystem: &8%player% has &cleft &8AdminDuty!" to loop-player
+
+on right click:
+	if held item of player is gray dye named "&8Vanish: &7Off":
+		set {vanish.%player%} to true
+		set slot 7 of player's inventory to air
+		wait 1 tick
+		set slot 7 of player's inventory to lime dye named "&2Vanish: &aOn"
+		hide the player from all players
+	else if held item of player is lime dye named "&2Vanish: &aOn":
+		reveal the player from all players
+		set slot 7 of player's inventory to air
+		wait 1 tick
+		set slot 7 of player's inventory to gray dye named "&8Vanish: &7Off"
+		set {vanish.%player%} to false
+	else if held item of player is barrier named "&cExit Duty":
+		make player execute "/duty off"
+
+on tab complete of "/duty":
+	set tab completions for position 1 to "on", "off"
+
+on drop:
+	if {duty::%player's uuid%} is true:
+		cancel event
+		
+on quit:
+	if {duty::%player's uuid%} is true:
+		set slot 7 of player's inventory to air
+		set slot 6 of player's inventory to air
+		set slot 8 of player's inventory to air
+		delete player's helmet
+
+on join:
+	set {duty::%player's uuid%} to false
